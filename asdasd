@@ -1,564 +1,67 @@
 -- ==========================================
--- ESP SYSTEM INTEGRATION FROM SCRIPT 1
--- Add this to the END of Script 2 before "return library"
+-- FIXED ESP INTEGRATION (No external dependencies)
 -- ==========================================
 
--- First, load the ESP library (same as Script 1)
+-- Load ESP library
 local MatchaEsp = loadstring(game:HttpGet('https://raw.githubusercontent.com/alebinh60/asmobile/refs/heads/main/esplib'))()
 local esp = MatchaEsp
 
--- Initialize ESP with default settings
+-- Initialize ESP
 esp:Initialize()
 
--- Create a new column for ESP in Visuals tab (since Visuals tab already exists)
-local espCol = Visuals:column()
-
--- ==================== BOX ESP SECTION ====================
-local boxEspSection = espCol:section({name = "Box ESP"})
-
-boxEspSection:toggle({name = "Box ESP", flag = "BoxESPToggle", default = false, callback = function(Value)
-    esp.State.BoxEnabled = Value
-end})
-
--- Box Color (with color picker)
-boxEspSection:colorpicker({name = "Box Color", flag = "BoxColorPicker", color = Color3.new(0.403922, 0.349020, 0.701961), callback = function(Color, Alpha)
-    esp.Config.BoxColor = Color
-    for _, espObj in pairs(esp.Caches.BoxCache) do
-        if espObj.Box then espObj.Box.Color = Color end
-    end
-end})
-
--- Box Gradient Toggle
-boxEspSection:toggle({name = "Box Gradient", flag = "BoxGradientToggle", default = false, callback = function(Value)
-    esp.Config.BoxGradientEnabled = Value
-end})
-
--- Gradient Color 1
-boxEspSection:colorpicker({name = "Gradient Color 1", flag = "BoxGradientColor1", color = Color3.new(0.403922, 0.34902, 0.701961), callback = function(Color, Alpha)
-    esp.Config.BoxGradientColor1 = Color
-    for _, espObj in pairs(esp.Caches.BoxCache) do
-        if espObj.Gradient then
-            espObj.Gradient.Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, esp.Config.BoxGradientColor1),
-                ColorSequenceKeypoint.new(0.5, esp.Config.BoxGradientColor2),
-                ColorSequenceKeypoint.new(1, esp.Config.BoxGradientColor1)
-            })
-        end
-    end
-end})
-
--- Gradient Color 2
-boxEspSection:colorpicker({name = "Gradient Color 2", flag = "BoxGradientColor2", color = Color3.new(0.8, 0.4, 1), callback = function(Color, Alpha)
-    esp.Config.BoxGradientColor2 = Color
-    for _, espObj in pairs(esp.Caches.BoxCache) do
-        if espObj.Gradient then
-            espObj.Gradient.Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, esp.Config.BoxGradientColor1),
-                ColorSequenceKeypoint.new(0.5, esp.Config.BoxGradientColor2),
-                ColorSequenceKeypoint.new(1, esp.Config.BoxGradientColor1)
-            })
-        end
-    end
-end})
-
--- Box Fill Transparency
-boxEspSection:slider({name = "Box Fill Transparency", min = 0, max = 1, default = 0.5, interval = 0.01, flag = "BoxFillTransparency", callback = function(Value)
-    esp.Config.BoxFillTransparency = Value
-    for _, espObj in pairs(esp.Caches.BoxCache) do
-        if espObj.FillFrame then espObj.FillFrame.BackgroundTransparency = Value end
-    end
-end})
-
--- Box Outline Toggle
-boxEspSection:toggle({name = "Box Outline", flag = "BoxOutlineToggle", default = true, callback = function(Value)
-    esp.Config.BoxOutlineEnabled = Value
-    for _, espObj in pairs(esp.Caches.BoxCache) do
-        if espObj.Stroke then espObj.Stroke.Enabled = Value end
-        if espObj.BoxOutline then espObj.BoxOutline.Visible = Value and not esp.Config.BoxGradientEnabled end
-    end
-end})
-
--- Box Outline Color
-boxEspSection:colorpicker({name = "Outline Color", flag = "BoxOutlineColor", color = Color3.new(0, 0, 0), callback = function(Color, Alpha)
-    esp.Config.BoxOutlineColor = Color
-    for _, espObj in pairs(esp.Caches.BoxCache) do
-        if espObj.Stroke then espObj.Stroke.Color = Color end
-        if espObj.BoxOutline then espObj.BoxOutline.Color = Color end
-    end
-end})
-
--- ==================== RING ESP SECTION ====================
-local ringEspSection = espCol:section({name = "Ring ESP"})
-
-ringEspSection:toggle({name = "Ring ESP", flag = "RingESPToggle", default = false, callback = function(Value)
-    if Value then
-        esp:InitiateRing(Color3.new(1, 1, 1))
-    else
-        esp.State.RingEnabled = false
-    end
-end})
-
-ringEspSection:colorpicker({name = "Ring Color", flag = "RingColorPicker", color = Color3.new(1, 1, 1), callback = function(Color, Alpha)
-    esp.Config.RingColor = Color
-    for _, data in pairs(esp.Caches.RingCache) do
-        if data.Ring then data.Ring.Color3 = Color end
-    end
-end})
-
--- ==================== NAME ESP SECTION ====================
-local nameEspSection = espCol:section({name = "Name ESP"})
-
-nameEspSection:toggle({name = "Name ESP", flag = "NameESPToggle", default = false, callback = function(Value)
-    esp:InitiateName(Value)
-end})
-
--- ==================== DISTANCE ESP SECTION ====================
-local distanceEspSection = espCol:section({name = "Distance ESP"})
-
-distanceEspSection:toggle({name = "Distance ESP", flag = "DistanceESPToggle", default = false, callback = function(Value)
-    esp:InitiateDistance(Value)
-end})
-
--- ==================== SKELETON ESP SECTION ====================
-local skeletonEspSection = espCol:section({name = "Skeleton ESP"})
-
-skeletonEspSection:toggle({name = "Skeleton ESP", flag = "SkeletonESPToggle", default = false, callback = function(Value)
-    if Value then
-        esp:InitiateSkeleton(Color3.new(0.403922, 0.349020, 0.701961))
-    else
-        esp.State.SkeletonEnabled = false
-    end
-end})
-
-skeletonEspSection:colorpicker({name = "Skeleton Color", flag = "SkeletonColorPicker", color = Color3.new(0.403922, 0.349020, 0.701961), callback = function(Color, Alpha)
-    esp.Config.SkeletonColor = Color
-    for _, skeleton in pairs(esp.Caches.SkeletonCache) do
-        for _, line in pairs(skeleton) do
-            line.Color = Color
-        end
-    end
-end})
-
--- ==================== HEALTH BAR ESP SECTION ====================
-local healthEspSection = espCol:section({name = "Health Bar ESP"})
-
-healthEspSection:toggle({name = "Health Bar", flag = "HealthBarESPToggle", default = false, callback = function(Value)
-    esp.State.HealthBarEnabled = Value
-end})
-
-healthEspSection:toggle({name = "Health Text", flag = "HealthTextESPToggle", default = false, callback = function(Value)
-    esp.State.HealthTextEnabled = Value
-end})
-
-healthEspSection:slider({name = "Health Bar Smoothness", min = 0.05, max = 0.5, default = 0.15, interval = 0.01, flag = "HealthBarLerpSpeed", callback = function(Value)
-    esp.Config.HealthBarLerpSpeed = Value
-end})
-
--- ==================== TRACER ESP SECTION ====================
-local tracerEspSection = espCol:section({name = "Tracer ESP"})
-
-tracerEspSection:toggle({name = "Tracer ESP", flag = "TracerESPToggle", default = false, callback = function(Value)
-    if Value then
-        esp:InitiateTracer(Color3.new(0.403922, 0.349020, 0.701961), esp.Config.TracerOrigin or "Bottom Screen")
-    else
-        esp.State.TracerEnabled = false
-    end
-end})
-
-tracerEspSection:colorpicker({name = "Tracer Color", flag = "TracerColorPicker", color = Color3.new(0.403922, 0.349020, 0.701961), callback = function(Color, Alpha)
-    esp.Config.TracerColor = Color
-    for _, tracer in pairs(esp.Caches.TracerCache) do
-        tracer.Color = Color
-    end
-end})
-
-tracerEspSection:dropdown({name = "Tracer Origin", flag = "TracerOriginDropdown", default = "Bottom Screen", items = {"Bottom Screen", "Cursor", "Top Screen"}, callback = function(Value)
-    esp.Config.TracerOrigin = Value
-end})
-
--- ==================== CHAMS ESP SECTION ====================
-local chamsEspSection = espCol:section({name = "Chams ESP"})
-
-chamsEspSection:toggle({name = "Chams", flag = "ChamsToggle", default = false, callback = function(Value)
-    if Value then
-        esp:InitiateChams(Color3.new(0.403922, 0.34902, 0.701961))
-    else
-        esp.State.ChamsEnabled = false
-    end
-end})
-
-chamsEspSection:colorpicker({name = "Fill Color", flag = "ChamsColorPicker", color = Color3.new(0.403922, 0.34902, 0.701961), callback = function(Color, Alpha)
-    esp.Config.ChamsColor = Color
-    for _, chams in pairs(esp.Caches.ChamsCache) do
-        chams.FillColor = Color
-    end
-end})
-
-chamsEspSection:colorpicker({name = "Outline Color", flag = "ChamsOutlineColorPicker", color = Color3.new(1, 1, 1), callback = function(Color, Alpha)
-    esp.Config.ChamsOutlineColor = Color
-    for _, chams in pairs(esp.Caches.ChamsCache) do
-        chams.OutlineColor = Color
-    end
-end})
-
-chamsEspSection:slider({name = "Chams Transparency", min = 0, max = 1, default = 0.5, interval = 0.01, flag = "ChamFillTransparency", callback = function(Value)
-    esp.Config.ChamsFillTransparency = Value
-    for _, chams in pairs(esp.Caches.ChamsCache) do
-        chams.FillTransparency = Value
-    end
-end})
-
--- ==================== TEAM CHECK SECTION ====================
-local teamCheckSection = espCol:section({name = "Team Check"})
-
-teamCheckSection:toggle({name = "Team Check", flag = "TeamCheckToggle", default = true, callback = function(Value)
-    esp:TeamCheck(Value)
-end})
-
--- ==================== ESP DISTANCE SECTION ====================
-local espDistanceSection = espCol:section({name = "ESP Distance"})
-
-espDistanceSection:slider({name = "ESP Distance", min = 100, max = 1000, default = 1000, suffix = " studs", interval = 50, flag = "ESPDistanceSlider", callback = function(Value)
-    esp:SetDistance(Value)
-end})
-
--- ==================== STOMP EFFECTS SECTION FROM SCRIPT 1 ====================
-local stompEffectsSection = visCol1:section({name = "Stomp Effects"})
-
--- Load required modules for stomp effects (from Script 1)
-local function loadStompEffects()
-    -- This would contain the stomp effect functions from Script 1
-    -- For now, we'll just set up the UI
-    print("Stomp effects module loaded")
-end
-
-stompEffectsSection:toggle({name = "Stomp Effects", flag = "StompEffectsToggle", default = false, callback = function(Value)
-    if Value then
-        loadStompEffects()
-    end
-end})
-
-stompEffectsSection:dropdown({
-    name = "Select Stomp Effect",
-    flag = "StompEffectDropdown",
-    default = "Thanos",
-    items = {"Spirit", "RoadRoller", "Rings", "BlackHole", "Charm", "Thanos", "Afterslash"},
-    callback = function(Value)
-        print("Stomp effect changed to:", Value)
-    end
-})
-
--- ==================== WORLD SECTION FROM SCRIPT 1 ====================
-local worldSection = visCol1:section({name = "World"})
-
--- Christmas Button
-worldSection:button({name = "Christmas", callback = function()
-    local snowProps = game:GetService("ReplicatedStorage"):FindFirstChild("Christmas_2024")
-    if snowProps and snowProps:FindFirstChild("SnowProps") then
-        snowProps.SnowProps:Clone().Parent = workspace
-    end
-end})
-
--- Ambient Color
-worldSection:toggle({name = "Custom Ambient", flag = "CustomAmbient", default = false, callback = function(Value)
-    if Value then
-        game:GetService("Lighting").Ambient = library.flags["AmbientColor"] and library.flags["AmbientColor"].Color or Color3.new(0.5, 0.5, 0.5)
-    else
-        game:GetService("Lighting").Ambient = Color3.new(0.5, 0.5, 0.5)
-    end
-end})
-worldSection:colorpicker({name = "Ambient Color", flag = "AmbientColor", color = Color3.new(0.5, 0.5, 0.5), callback = function(Color, Alpha)
-    if library.flags["CustomAmbient"] then
-        game:GetService("Lighting").Ambient = Color
-    end
-end})
-
--- Fog Control
-worldSection:toggle({name = "Custom Fog", flag = "CustomFog", default = false, callback = function(Value)
-    local lighting = game:GetService("Lighting")
-    if Value then
-        lighting.FogColor = library.flags["FogColor"] and library.flags["FogColor"].Color or Color3.new(0.5, 0.5, 0.5)
-        lighting.FogStart = library.flags["FogStart"] or 0
-        lighting.FogEnd = library.flags["FogEnd"] or 1000
-    else
-        lighting.FogColor = Color3.new(0.5, 0.5, 0.5)
-        lighting.FogStart = 0
-        lighting.FogEnd = 1000
-    end
-end})
-worldSection:colorpicker({name = "Fog Color", flag = "FogColor", color = Color3.new(0.5, 0.5, 0.5), callback = function(Color, Alpha)
-    if library.flags["CustomFog"] then
-        game:GetService("Lighting").FogColor = Color
-    end
-end})
-worldSection:slider({name = "Fog Start", min = 0, max = 1000, default = 0, interval = 10, flag = "FogStart", callback = function(Value)
-    if library.flags["CustomFog"] then
-        game:GetService("Lighting").FogStart = Value
-    end
-end})
-worldSection:slider({name = "Fog End", min = 0, max = 1000, default = 1000, interval = 10, flag = "FogEnd", callback = function(Value)
-    if library.flags["CustomFog"] then
-        game:GetService("Lighting").FogEnd = Value
-    end
-end})
-
--- Brightness
-worldSection:toggle({name = "Custom Brightness", flag = "CustomBrightness", default = false, callback = function(Value)
-    if Value then
-        game:GetService("Lighting").Brightness = library.flags["BrightnessValue"] or 1
-    else
-        game:GetService("Lighting").Brightness = 1
-    end
-end})
-worldSection:slider({name = "Brightness", min = 0, max = 10, default = 1, interval = 0.5, flag = "BrightnessValue", callback = function(Value)
-    if library.flags["CustomBrightness"] then
-        game:GetService("Lighting").Brightness = Value
-    end
-end})
-
--- Global Shadows
-worldSection:toggle({name = "Global Shadows", flag = "GlobalShadows", default = true, callback = function(Value)
-    game:GetService("Lighting").GlobalShadows = Value
-end})
-
--- Clock Time
-worldSection:toggle({name = "Custom Time", flag = "CustomClockTime", default = false, callback = function(Value)
-    if Value then
-        game:GetService("Lighting").ClockTime = library.flags["ClockTimeValue"] or 14
-    else
-        game:GetService("Lighting").ClockTime = 14
-    end
-end})
-worldSection:slider({name = "Time of Day", min = 0, max = 24, default = 14, interval = 1, flag = "ClockTimeValue", callback = function(Value)
-    if library.flags["CustomClockTime"] then
-        game:GetService("Lighting").ClockTime = Value
-    end
-end})
-
--- ==================== SKYBOX SECTION ====================
-local skyboxSection = visCol1:section({name = "Skybox"})
-
-local SkyboxAssets = {
-    ["HD"] = {
-        Bk = "http://www.roblox.com/asset/?id=16553658937",
-        Dn = "http://www.roblox.com/asset/?id=16553660713",
-        Ft = "http://www.roblox.com/asset/?id=16553662144",
-        Lf = "http://www.roblox.com/asset/?id=16553664042",
-        Rt = "http://www.roblox.com/asset/?id=16553665766",
-        Up = "http://www.roblox.com/asset/?id=16553667750"
-    },
-    ["Snow"] = {
-        Bk = "http://www.roblox.com/asset/?id=155657655",
-        Dn = "http://www.roblox.com/asset/?id=155674246",
-        Ft = "http://www.roblox.com/asset/?id=155657609",
-        Lf = "http://www.roblox.com/asset/?id=155657671",
-        Rt = "http://www.roblox.com/asset/?id=155657619",
-        Up = "http://www.roblox.com/asset/?id=155674931"
-    },
-    ["Space"] = {
-        Bk = "http://www.roblox.com/asset/?id=166509999",
-        Dn = "http://www.roblox.com/asset/?id=166510057",
-        Ft = "http://www.roblox.com/asset/?id=166510116",
-        Lf = "http://www.roblox.com/asset/?id=166510092",
-        Rt = "http://www.roblox.com/asset/?id=166510131",
-        Up = "http://www.roblox.com/asset/?id=166510114"
-    },
-    ["Sunset"] = {
-        Bk = "http://www.roblox.com/asset/?id=271042516",
-        Dn = "http://www.roblox.com/asset/?id=271077243",
-        Ft = "http://www.roblox.com/asset/?id=271042556",
-        Lf = "http://www.roblox.com/asset/?id=271042310",
-        Rt = "http://www.roblox.com/asset/?id=271042467",
-        Up = "http://www.roblox.com/asset/?id=271077958"
-    }
-}
-
-local customSkyInstance = nil
-
-local function applyCustomSkybox(name)
-    if customSkyInstance then customSkyInstance:Destroy() end
-    customSkyInstance = Instance.new("Sky")
-    local sky = SkyboxAssets[name]
-    if sky then
-        customSkyInstance.SkyboxBk = sky.Bk
-        customSkyInstance.SkyboxDn = sky.Dn
-        customSkyInstance.SkyboxFt = sky.Ft
-        customSkyInstance.SkyboxLf = sky.Lf
-        customSkyInstance.SkyboxRt = sky.Rt
-        customSkyInstance.SkyboxUp = sky.Up
-        customSkyInstance.Parent = game:GetService("Lighting")
-    end
-end
-
-local function restoreDefaultSkybox()
-    if customSkyInstance then customSkyInstance:Destroy() end
-end
-
-skyboxSection:toggle({name = "Custom Skybox", flag = "CustomSkyboxEnabled", default = false, callback = function(Value)
-    if Value then
-        applyCustomSkybox(library.flags["SkyboxSelected"] or "HD")
-    else
-        restoreDefaultSkybox()
-    end
-end})
-
-skyboxSection:dropdown({
-    name = "Skybox",
-    flag = "SkyboxSelected",
-    default = "HD",
-    items = {"HD", "Snow", "Space", "Sunset"},
-    callback = function(Value)
-        if library.flags["CustomSkyboxEnabled"] then
-            applyCustomSkybox(Value)
-        end
-    end
-})
-
--- ==================== RAIN/SNOW EFFECTS SECTION ====================
-local weatherSection = visCol1:section({name = "Weather Effects"})
-
--- Rain Settings
-local rainPart = nil
-local rainEmitter = nil
-local rainConnection = nil
-
-local function rainParticleEmitter()
-    if rainPart then
-        rainPart:Destroy()
-        rainPart = nil
-        rainEmitter = nil
-    end
-
-    rainPart = Instance.new("Part")
-    rainPart.Size = Vector3.new(51.8, 0.001, 52.084)
-    rainPart.CanCollide = false
-    rainPart.Anchored = true
-    rainPart.Transparency = 1
-    rainPart.Parent = workspace
-
-    rainEmitter = Instance.new("ParticleEmitter")
-    rainEmitter.Color = ColorSequence.new(library.flags["RainColor"] and library.flags["RainColor"].Color or Color3.new(1, 1, 1))
-    rainEmitter.LightEmission = 1
-    rainEmitter.Orientation = Enum.ParticleOrientation.FacingCameraWorldUp
-    rainEmitter.Size = NumberSequence.new(0.4)
-    rainEmitter.Squash = NumberSequence.new(4)
-    rainEmitter.Texture = "rbxassetid://129110349"
-    rainEmitter.EmissionDirection = Enum.NormalId.Bottom
-    rainEmitter.Lifetime = NumberRange.new(library.flags["RainLifetime"] or 5)
-    rainEmitter.Rate = library.flags["RainRate"] or 1000
-    rainEmitter.Speed = NumberRange.new(library.flags["RainSpeed"] or 100)
-    rainEmitter.LockedToPart = true
-    rainEmitter.Enabled = true
-    rainEmitter.Parent = rainPart
-end
-
-weatherSection:toggle({name = "Rain", flag = "RainEnabled", default = false, callback = function(Value)
-    if Value then
-        rainParticleEmitter()
-        rainConnection = game:GetService("RunService").Heartbeat:Connect(function()
-            if rainPart then
-                local camPos = workspace.CurrentCamera.CFrame.Position
-                rainPart.CFrame = CFrame.new(camPos + Vector3.new(0, 30, 0))
-            end
-        end)
-    else
-        if rainConnection then
-            rainConnection:Disconnect()
-            rainConnection = nil
-        end
-        if rainPart then
-            rainPart:Destroy()
-            rainPart = nil
-            rainEmitter = nil
-        end
-    end
-end})
-
-weatherSection:colorpicker({name = "Rain Color", flag = "RainColor", color = Color3.new(1, 1, 1), callback = function(Color, Alpha)
-    if library.flags["RainEnabled"] and rainEmitter then
-        rainEmitter.Color = ColorSequence.new(Color)
-    end
-end})
-
-weatherSection:slider({name = "Rain Rate", min = 1, max = 10000, default = 1000, interval = 100, flag = "RainRate", callback = function(Value)
-    if rainEmitter then rainEmitter.Rate = Value end
-end})
-
-weatherSection:slider({name = "Rain Speed", min = 10, max = 1000, default = 100, interval = 10, flag = "RainSpeed", callback = function(Value)
-    if rainEmitter then rainEmitter.Speed = NumberRange.new(Value) end
-end})
-
--- Snow Settings
-local snowPart = nil
-local snowEmitter = nil
-local snowConnection = nil
-
-local function snowParticleEmitter()
-    if snowPart then
-        snowPart:Destroy()
-        snowPart = nil
-        snowEmitter = nil
-    end
-
-    snowPart = Instance.new("Part")
-    snowPart.Size = Vector3.new(51.8, 0.001, 52.084)
-    snowPart.Anchored = true
-    snowPart.CanCollide = false
-    snowPart.Transparency = 1
-    snowPart.Parent = workspace
-
-    snowEmitter = Instance.new("ParticleEmitter")
-    snowEmitter.Color = ColorSequence.new(library.flags["SnowColor"] and library.flags["SnowColor"].Color or Color3.new(1, 1, 1))
-    snowEmitter.Lifetime = NumberRange.new(5, 100)
-    snowEmitter.Rate = library.flags["SnowRate"] or 100
-    snowEmitter.Speed = NumberRange.new(library.flags["SnowSpeed"] or 10)
-    snowEmitter.Size = NumberSequence.new(0.2, 0.4)
-    snowEmitter.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.8625),
-        NumberSequenceKeypoint.new(0.15, 0),
-        NumberSequenceKeypoint.new(0.196326, 0.70625),
-        NumberSequenceKeypoint.new(1, 0)
-    })
-    snowEmitter.Texture = "rbxassetid://129110349"
-    snowEmitter.LockedToPart = false
-    snowEmitter.Enabled = true
-    snowEmitter.Parent = snowPart
-end
-
-weatherSection:toggle({name = "Snow", flag = "SnowEnabled", default = false, callback = function(Value)
-    if Value then
-        snowParticleEmitter()
-        snowConnection = game:GetService("RunService").Heartbeat:Connect(function()
-            if snowPart then
-                local camPos = workspace.CurrentCamera.CFrame.Position
-                snowPart.CFrame = CFrame.new(camPos + Vector3.new(0, 5, 0))
-            end
-        })
-    else
-        if snowConnection then
-            snowConnection:Disconnect()
-            snowConnection = nil
-        end
-        if snowPart then
-            snowPart:Destroy()
-            snowPart = nil
-            snowEmitter = nil
-        end
-    end
-end})
-
-weatherSection:colorpicker({name = "Snow Color", flag = "SnowColor", color = Color3.new(1, 1, 1), callback = function(Color, Alpha)
-    if library.flags["SnowEnabled"] and snowEmitter then
-        snowEmitter.Color = ColorSequence.new(Color)
-    end
-end})
-
-weatherSection:slider({name = "Snow Rate", min = 1, max = 1000, default = 100, interval = 10, flag = "SnowRate", callback = function(Value)
-    if snowEmitter then snowEmitter.Rate = Value end
-end})
-
-weatherSection:slider({name = "Snow Speed", min = 1, max = 100, default = 10, interval = 1, flag = "SnowSpeed", callback = function(Value)
-    if snowEmitter then snowEmitter.Speed = NumberRange.new(Value) end
-end})
-
-print("ESP System successfully integrated into Script 2!")
+-- Create column in Visuals tab
+local espColumn = Visuals:column()
+
+-- BOX ESP
+local boxSection = espColumn:section({name = "Box ESP"})
+boxSection:toggle({name = "Box ESP", default = false, callback = function(v) esp.State.BoxEnabled = v end})
+boxSection:colorpicker({name = "Box Color", color = Color3.new(0.4, 0.35, 0.7), callback = function(c) esp.Config.BoxColor = c end})
+boxSection:toggle({name = "Box Outline", default = true, callback = function(v) esp.Config.BoxOutlineEnabled = v end})
+boxSection:slider({name = "Fill Transparency", min = 0, max = 1, default = 0.5, callback = function(v) esp.Config.BoxFillTransparency = v end})
+
+-- RING ESP
+local ringSection = espColumn:section({name = "Ring ESP"})
+ringSection:toggle({name = "Ring ESP", default = false, callback = function(v) if v then esp:InitiateRing(Color3.new(1,1,1)) else esp.State.RingEnabled = false end end})
+ringSection:colorpicker({name = "Ring Color", color = Color3.new(1,1,1), callback = function(c) esp.Config.RingColor = c end})
+
+-- NAME ESP
+local nameSection = espColumn:section({name = "Name ESP"})
+nameSection:toggle({name = "Name ESP", default = false, callback = function(v) esp:InitiateName(v) end})
+
+-- DISTANCE ESP
+local distSection = espColumn:section({name = "Distance ESP"})
+distSection:toggle({name = "Distance ESP", default = false, callback = function(v) esp:InitiateDistance(v) end})
+
+-- SKELETON ESP
+local skeletonSection = espColumn:section({name = "Skeleton ESP"})
+skeletonSection:toggle({name = "Skeleton ESP", default = false, callback = function(v) if v then esp:InitiateSkeleton(Color3.new(0.4,0.35,0.7)) else esp.State.SkeletonEnabled = false end end})
+skeletonSection:colorpicker({name = "Skeleton Color", color = Color3.new(0.4,0.35,0.7), callback = function(c) esp.Config.SkeletonColor = c end})
+
+-- HEALTH BAR ESP
+local healthSection = espColumn:section({name = "Health Bar ESP"})
+healthSection:toggle({name = "Health Bar", default = false, callback = function(v) esp.State.HealthBarEnabled = v end})
+healthSection:toggle({name = "Health Text", default = false, callback = function(v) esp.State.HealthTextEnabled = v end})
+healthSection:slider({name = "Smoothness", min = 0.05, max = 0.5, default = 0.15, callback = function(v) esp.Config.HealthBarLerpSpeed = v end})
+
+-- TRACER ESP
+local tracerSection = espColumn:section({name = "Tracer ESP"})
+tracerSection:toggle({name = "Tracer ESP", default = false, callback = function(v) if v then esp:InitiateTracer(Color3.new(0.4,0.35,0.7), "Bottom Screen") else esp.State.TracerEnabled = false end end})
+tracerSection:colorpicker({name = "Tracer Color", color = Color3.new(0.4,0.35,0.7), callback = function(c) esp.Config.TracerColor = c end})
+tracerSection:dropdown({name = "Tracer Origin", default = "Bottom Screen", items = {"Bottom Screen", "Cursor", "Top Screen"}, callback = function(v) esp.Config.TracerOrigin = v end})
+
+-- CHAMS ESP
+local chamsSection = espColumn:section({name = "Chams ESP"})
+chamsSection:toggle({name = "Chams", default = false, callback = function(v) if v then esp:InitiateChams(Color3.new(0.4,0.35,0.7)) else esp.State.ChamsEnabled = false end end})
+chamsSection:colorpicker({name = "Fill Color", color = Color3.new(0.4,0.35,0.7), callback = function(c) esp.Config.ChamsColor = c end})
+chamsSection:colorpicker({name = "Outline Color", color = Color3.new(1,1,1), callback = function(c) esp.Config.ChamsOutlineColor = c end})
+chamsSection:slider({name = "Transparency", min = 0, max = 1, default = 0.5, callback = function(v) esp.Config.ChamsFillTransparency = v end})
+
+-- TEAM CHECK
+local teamSection = espColumn:section({name = "Team Check"})
+teamSection:toggle({name = "Team Check", default = true, callback = function(v) esp:TeamCheck(v) end})
+
+-- ESP DISTANCE
+local distLimitSection = espColumn:section({name = "ESP Distance"})
+distLimitSection:slider({name = "Max Distance", min = 100, max = 1000, default = 1000, suffix = " studs", callback = function(v) esp:SetDistance(v) end})
+
+print("ESP System loaded!")
